@@ -9,7 +9,6 @@ function init() {
   let intermediateButton = document.getElementById('intermediate');
   let expertButton = document.getElementById('expert');
 
-  //first element in gameState is where the mines are, next is adjacencies
   gameInit([9, 9], 10);
 
   easyButton.addEventListener('click', () => {
@@ -25,32 +24,28 @@ function init() {
 
 //does everything needed to start a game based on board_size and num_mines
 function gameInit(board_size, num_mines) {
-  let gameState = createArray(board_size, num_mines);
-  addSquaresAndTextToSVG(gameState);
+  let gameBoard = createArray(board_size, num_mines);
+  addSquaresAndTextToSVG(gameBoard);
 }
 
 //initializes gameBoard based on board_size and num_mines
 function createArray(board_size, num_mines) {
   let gameBoard = [];
-  let playerBoard = [];
   for(let i = 0; i < board_size[0]; i++) {
     gameBoard.push([]);
-    playerBoard.push([]);
   }
 
   //fill up first num_mines spots with an X
   for(let i = 0; i < num_mines; i++) {
     gameBoard[Math.floor(i / board_size[1])].push('X');
-    playerBoard[Math.floor(i / board_size[1])].push('');
   }
   //fill the rest with 0s for now
   for(let i = num_mines; i < board_size[0] * board_size[1]; i++) {
     gameBoard[Math.floor(i / board_size[1])].push('0');
-    playerBoard[Math.floor(i / board_size[1])].push('');
   }
   shuffleGameBoard(gameBoard);
   calculateAdjacencies(gameBoard);
-  return [gameBoard, playerBoard];
+  return gameBoard;
 }
 
 //shuffles the gameBoard so that mines are in a random spot, fisher yates
@@ -87,10 +82,10 @@ function calculateAdjacencies(gameBoard) {
 }
 
 //creates grid of squares based on board_size
-function addSquaresAndTextToSVG(gameState) {
+function addSquaresAndTextToSVG(gameBoard) {
   svg.replaceChildren();
-  for(let i = 0; i < gameState[0].length; i++) {
-    for(let j = 0; j < gameState[0][0].length; j++) {
+  for(let i = 0; i < gameBoard.length; i++) {
+    for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       square.setAttribute('width', SQ_WIDTH - BORDER_WIDTH);
       square.setAttribute('height', SQ_WIDTH - BORDER_WIDTH);
@@ -98,11 +93,11 @@ function addSquaresAndTextToSVG(gameState) {
       square.setAttribute('y', j * SQ_WIDTH);
       square.setAttribute('id', i + ',' + j + ',square');
       square.addEventListener('click', function () {
-        reveal(this.id, gameState);
+        reveal(this.id, gameBoard);
       });
       square.addEventListener('contextmenu', function(event) {
         event.preventDefault();
-	mark(this.id, gameState);
+	mark(this.id);
       })
       svg.appendChild(square);
       let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -117,16 +112,18 @@ function addSquaresAndTextToSVG(gameState) {
 }
 
 //reveals the square and ends game if necessary
-function reveal(id, gameState) {
+function reveal(id, gameBoard) {
   let id_split = id.split(',');
-  let id_x = parseInt(id_split[0]);
-  let id_y = parseInt(id_split[1]);
   let square = document.getElementById(id);
-  square.setAttribute('fill', 'red');
+  let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
+  if(text.innerHTML != '!') {
+    square.setAttribute('fill', 'grey');
+    text.innerHTML = gameBoard[id_split[0]][id_split[1]];
+  }
 }
 
 //marks the square as either a mine, question mark, or back to empty
-function mark(id, gameState) {
+function mark(id) {
   let square = document.getElementById(id);
   let id_split = id.split(',');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
