@@ -126,6 +126,7 @@ function reveal(id, gameBoard) {
     text.innerHTML = gameBoard[id_split[0]][id_split[1]];
     if(text.innerHTML == '0') {
       //recursively reveal other squares
+      text.innerHTML = ' ';
       for(let i = -1; i <= 1; i++) {
         for(let j = -1; j <= 1; j++) {
           reveal((id_x + i) + ',' + (id_y + j), gameBoard);
