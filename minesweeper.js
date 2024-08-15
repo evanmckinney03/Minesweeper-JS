@@ -114,11 +114,24 @@ function addSquaresAndTextToSVG(gameBoard) {
 //reveals the square and ends game if necessary
 function reveal(id, gameBoard) {
   let id_split = id.split(',');
-  let square = document.getElementById(id);
+  let id_x = parseInt(id_split[0]);
+  let id_y = parseInt(id_split[1]);
+  console.log('revealing: ' + id_x + ',' + id_y);
+  if(id_x < 0 || id_x >= gameBoard.length || id_y < 0 || id_y >= gameBoard.length) return;
+  let square = document.getElementById(id_split[0] + ',' + id_split[1] + ',square');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
-  if(text.innerHTML != '!') {
+  //only reveal blank squares or question marks
+  if(text.innerHTML.length == 0 || text.innerHTML == '?') {
     square.setAttribute('fill', 'grey');
     text.innerHTML = gameBoard[id_split[0]][id_split[1]];
+    if(text.innerHTML == '0') {
+      //recursively reveal other squares
+      for(let i = -1; i <= 1; i++) {
+        for(let j = -1; j <= 1; j++) {
+          reveal((id_x + i) + ',' + (id_y + j), gameBoard);
+	}
+      }
+    }
   }
 }
 
@@ -127,7 +140,7 @@ function mark(id) {
   let square = document.getElementById(id);
   let id_split = id.split(',');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
-  if(text.innerHTML === '') {
+  if(text.innerHTML.length == 0) {
     text.innerHTML = '!';
   } else if(text.innerHTML == '!') {
     text.innerHTML = '?';
