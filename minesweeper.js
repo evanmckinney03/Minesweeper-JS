@@ -25,7 +25,8 @@ function init() {
 //does everything needed to start a game based on board_size and num_mines
 function gameInit(board_size, num_mines) {
   let gameBoard = createArray(board_size, num_mines);
-  addSquaresAndTextToSVG(gameBoard);
+  let numCleared = 0;
+  addSquaresAndTextToSVG(gameBoard, numCleared, num_mines);
 }
 
 //initializes gameBoard based on board_size and num_mines
@@ -82,7 +83,8 @@ function calculateAdjacencies(gameBoard) {
 }
 
 //creates grid of squares based on board_size
-function addSquaresAndTextToSVG(gameBoard) {
+function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
+  let count = 0;
   svg.replaceChildren();
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
@@ -93,7 +95,11 @@ function addSquaresAndTextToSVG(gameBoard) {
       square.setAttribute('y', j * SQ_WIDTH);
       square.setAttribute('id', i + ',' + j + ',square');
       square.addEventListener('click', function () {
-        reveal(this.id, gameBoard);
+        numCleared += reveal(this.id, gameBoard);
+	if(numCleared == gameBoard.length * gameBoard[0].length - num_mines) {
+          //win
+	  console.log("win");
+	}
       });
       square.addEventListener('contextmenu', function(event) {
         event.preventDefault();
@@ -111,29 +117,34 @@ function addSquaresAndTextToSVG(gameBoard) {
   }
 }
 
-//reveals the square and ends game if necessary
+//reveals the square and returns the number of squares revealed
 function reveal(id, gameBoard) {
   let id_split = id.split(',');
   let id_x = parseInt(id_split[0]);
   let id_y = parseInt(id_split[1]);
-  console.log('revealing: ' + id_x + ',' + id_y);
-  if(id_x < 0 || id_x >= gameBoard.length || id_y < 0 || id_y >= gameBoard.length) return;
+  if(id_x < 0 || id_x >= gameBoard.length || id_y < 0 || id_y >= gameBoard.length) return 0;
+  let numCleared = 0;
   let square = document.getElementById(id_split[0] + ',' + id_split[1] + ',square');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
   //only reveal blank squares or question marks
   if(text.innerHTML.length == 0 || text.innerHTML == '?') {
     square.setAttribute('fill', 'grey');
+    numCleared++;
     text.innerHTML = gameBoard[id_split[0]][id_split[1]];
+    if(text.innerHTML == 'X') {
+      console.log('loss');
+    }
     if(text.innerHTML == '0') {
       //recursively reveal other squares
       text.innerHTML = ' ';
       for(let i = -1; i <= 1; i++) {
         for(let j = -1; j <= 1; j++) {
-          reveal((id_x + i) + ',' + (id_y + j), gameBoard);
+          numCleared += reveal((id_x + i) + ',' + (id_y + j), gameBoard);
 	}
       }
     }
   }
+  return numCleared;
 }
 
 //marks the square as either a mine, question mark, or back to empty
