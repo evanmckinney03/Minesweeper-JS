@@ -112,7 +112,6 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
       text.setAttribute('class', 'text');
       text.setAttribute('x', i * SQ_WIDTH + Math.floor(SQ_WIDTH / 2));
       text.setAttribute('y', j * SQ_WIDTH + Math.floor(SQ_WIDTH / 2));
-      text.setAttribute('fill', 'green');
       text.setAttribute('id', i + ',' + j + ',text');
       svg.appendChild(text);
     }
@@ -147,12 +146,11 @@ function reveal(id, gameBoard) {
   if(text.innerHTML.length == 0 || text.innerHTML == '?') {
     reveal_edit(square, text, gameBoard[id_split[0]][id_split[1]]);
     numCleared++;
-    if(text.innerHTML == 'X') {
+    if(gameBoard[id_split[0]][id_split[1]] == 'X') {
       loss(gameBoard);
     }
-    if(text.innerHTML == '0') {
+    if(gameBoard[id_split[0]][id_split[1]] == '0') {
       //recursively reveal other squares
-      text.innerHTML = ' ';
       for(let i = -1; i <= 1; i++) {
         for(let j = -1; j <= 1; j++) {
           numCleared += reveal((id_x + i) + ',' + (id_y + j), gameBoard);
@@ -166,8 +164,22 @@ function reveal(id, gameBoard) {
 //changes the square color and the text to the newText string
 function reveal_edit(square, text, newText){
   square.setAttribute('fill', 'grey');
-  text.innerHTML = newText;
+  text_edit(text, newText);
 }
+//changes the text color
+function text_edit(text, newText) {
+  if(newText == '0') {
+    text.innerHTML = ' ';
+  } else {
+    text.innerHTML = newText;
+    if(newText == '!' || newText == '?' || newText.length == 0) {
+      text.setAttribute('class', 'text textexclam');
+    } else {
+      text.setAttribute('class', 'text text' + newText);
+    }
+  }
+}
+
 
 //marks the square as either a mine, question mark, or back to empty
 function mark(id) {
@@ -175,11 +187,11 @@ function mark(id) {
   let id_split = id.split(',');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
   if(text.innerHTML.length == 0) {
-    text.innerHTML = '!';
+    text_edit(text, '!');
   } else if(text.innerHTML == '!') {
-    text.innerHTML = '?';
+    text_edit(text, '?');
   } else if(text.innerHTML == '?') {
-    text.innerHTML = '';
+    text_edit(text, '');
   }
 }
 
