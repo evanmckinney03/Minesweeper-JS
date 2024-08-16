@@ -99,13 +99,13 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
 	}
         numCleared += reveal(this.id, gameBoard);
 	if(numCleared == gameBoard.length * gameBoard[0].length - num_mines) {
-          //win
-	  console.log("win");
+	  win(gameBoard);
 	}
       });
       square.addEventListener('contextmenu', function(event) {
         event.preventDefault();
-	mark(this.id);
+	let isWon = numCleared == gameBoard.length * gameBoard[0].length - num_mines;
+	mark(this.id, isWon);
       })
       svg.appendChild(square);
       let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -182,7 +182,8 @@ function text_edit(text, newText) {
 
 
 //marks the square as either a mine, question mark, or back to empty
-function mark(id) {
+function mark(id, disable) {
+  if(disable) return;
   let square = document.getElementById(id);
   let id_split = id.split(',');
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
@@ -202,6 +203,19 @@ function loss(gameBoard) {
       let square = document.getElementById(i + ',' + j + ',square');
       let text = document.getElementById(i + ',' + j + ',text');
       reveal_edit(square, text, gameBoard[i][j]);
+    }
+  }
+}
+
+//marks all the mines with exclamation points
+function win(gameBoard) { 
+  for(let i = 0; i < gameBoard.length; i++) {
+    for(let j = 0; j < gameBoard[0].length; j++) {
+      let square = document.getElementById(i + ',' + j + ',square');
+      let text = document.getElementById(i + ',' + j + ',text');
+      if(text.innerHTML.length == 0 || text.innerHTML == '!') {
+        text_edit(text, '!');
+      }
     }
   }
 }
