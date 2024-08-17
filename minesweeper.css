@@ -1,5 +1,6 @@
 #svg {
   user-select: none;
+  background-color: lightgrey;
 }
 
 .text {
@@ -62,4 +63,13 @@
   stroke: white;
   stroke-width: 2;
   pointer-events: none;
+}
+
+.timerRect {
+  fill: darkgrey;
+}
+
+.timerText {
+  fill: red;
+  dominant-baseline: auto;
 }

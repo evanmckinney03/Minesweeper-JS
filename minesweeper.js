@@ -1,7 +1,11 @@
 const SQ_WIDTH = 35;
 const BORDER_WIDTH = 2;
 const START_OFFSET_X = 10;
-const START_OFFSET_Y = 10;
+//height of the top bar
+const TOP_HEIGHT = 40;
+const START_OFFSET_Y = START_OFFSET_X * 2 + TOP_HEIGHT;
+
+let timer;
 
 window.onload = init;
 
@@ -99,6 +103,7 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
       square.addEventListener('click', function () {
 	if(numCleared == 0) {
           rerollUntilGoodStart(this.id, gameBoard, num_mines);
+	  startTimer();
 	}
         numCleared += reveal(this.id, gameBoard);
 	if(numCleared == gameBoard.length * gameBoard[0].length - num_mines) {
@@ -121,8 +126,9 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
   }
   drawBorders(gameBoard, svg);
   //adjust svg size
-  svg.setAttribute('width', START_OFFSET_X + SQ_WIDTH * gameBoard.length + BORDER_WIDTH);
-  svg.setAttribute('height', START_OFFSET_Y + SQ_WIDTH * gameBoard[0].length + BORDER_WIDTH);
+  svg.setAttribute('width', START_OFFSET_X * 2 + SQ_WIDTH * gameBoard.length);
+  svg.setAttribute('height', START_OFFSET_Y + START_OFFSET_X + SQ_WIDTH * gameBoard[0].length);
+  addTimer(svg);
 }
 //draw borders based on the size of the gameBoard
 function drawBorders(gameBoard, svg) {
@@ -142,6 +148,49 @@ function drawBorders(gameBoard, svg) {
   path.setAttribute('class', 'border');
   path.setAttribute('d', path_d); 
   svg.appendChild(path);
+}
+
+//adds the timer in the top left
+function addTimer(svg) {
+  //amount text is inside the box
+  let textIn = 2;
+  let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('width', SQ_WIDTH * 2);
+  rect.setAttribute('height', TOP_HEIGHT);
+  rect.setAttribute('x', START_OFFSET_X);
+  rect.setAttribute('y', START_OFFSET_X);
+  rect.setAttribute('id', 'timerRect');
+  rect.setAttribute('class', 'timerRect');
+  let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', START_OFFSET_X + textIn);
+  text.setAttribute('y', START_OFFSET_X + TOP_HEIGHT - textIn * 4);
+  text.setAttribute('class', 'timerText');
+  text.setAttribute('id', 'timerText');
+  text.setAttribute('textLength', rect.getAttribute('width') - textIn * 2);
+  text.setAttribute('font-size', TOP_HEIGHT);
+  text.innerHTML = '000';
+  svg.appendChild(rect);
+  svg.appendChild(text);
+}
+
+//starts the timer in the top left
+function startTimer() {
+  timer = setInterval(incrementTimer, 1000);
+}
+
+//stops the timer in the top left
+function stopTimer() {
+  clearInterval(timer);
+}
+
+//increases the timer by 1, max of 999
+function incrementTimer() {
+  let text = document.getElementById('timerText');
+  let time = parseInt(text.innerHTML);
+  time = Math.min(time + 1, 999);
+  time = '00' + time;
+  time = time.substring(time.length - 3);
+  text.innerHTML = time;
 }
 
 //recreates the arrays until the square at id has a 0
@@ -223,6 +272,7 @@ function mark(id, disable) {
 
 //clears the field
 function loss(gameBoard) {
+  stopTimer();
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.getElementById(i + ',' + j + ',square');
@@ -234,6 +284,7 @@ function loss(gameBoard) {
 
 //marks all the mines with exclamation points
 function win(gameBoard) { 
+  stopTimer();
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.getElementById(i + ',' + j + ',square');
