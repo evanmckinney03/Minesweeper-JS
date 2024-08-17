@@ -1,5 +1,7 @@
 const SQ_WIDTH = 35;
 const BORDER_WIDTH = 2;
+const START_OFFSET_X = 10;
+const START_OFFSET_Y = 10;
 
 window.onload = init;
 
@@ -88,11 +90,12 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      square.setAttribute('width', SQ_WIDTH - BORDER_WIDTH);
-      square.setAttribute('height', SQ_WIDTH - BORDER_WIDTH);
-      square.setAttribute('x', i * SQ_WIDTH);
-      square.setAttribute('y', j * SQ_WIDTH);
+      square.setAttribute('width', SQ_WIDTH);
+      square.setAttribute('height', SQ_WIDTH);
+      square.setAttribute('x', i * SQ_WIDTH + START_OFFSET_X);
+      square.setAttribute('y', j * SQ_WIDTH + START_OFFSET_Y);
       square.setAttribute('id', i + ',' + j + ',square');
+      square.setAttribute('class', 'newSquare');
       square.addEventListener('click', function () {
 	if(numCleared == 0) {
           rerollUntilGoodStart(this.id, gameBoard, num_mines);
@@ -110,12 +113,35 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
       svg.appendChild(square);
       let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('class', 'text');
-      text.setAttribute('x', i * SQ_WIDTH + Math.floor(SQ_WIDTH / 2));
-      text.setAttribute('y', j * SQ_WIDTH + Math.floor(SQ_WIDTH / 2));
+      text.setAttribute('x', i * SQ_WIDTH + Math.floor(SQ_WIDTH / 2) + START_OFFSET_X);
+      text.setAttribute('y', j * SQ_WIDTH + Math.floor(SQ_WIDTH / 2) + START_OFFSET_Y);
       text.setAttribute('id', i + ',' + j + ',text');
       svg.appendChild(text);
     }
   }
+  drawBorders(gameBoard, svg);
+  //adjust svg size
+  svg.setAttribute('width', START_OFFSET_X + SQ_WIDTH * gameBoard.length + BORDER_WIDTH);
+  svg.setAttribute('height', START_OFFSET_Y + SQ_WIDTH * gameBoard[0].length + BORDER_WIDTH);
+}
+//draw borders based on the size of the gameBoard
+function drawBorders(gameBoard, svg) {
+  let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  let path_d = '';
+  //vertical lines
+  for(let i = 0; i < gameBoard.length + 1; i++) {
+    path_d += ' M ' + (START_OFFSET_X + SQ_WIDTH * i) + ' ' + START_OFFSET_Y;
+    path_d += ' v ' + (gameBoard[0].length * SQ_WIDTH);
+  }
+  //horizontal lines
+  for(let i = 0; i < gameBoard[0].length + 1; i++) {
+    path_d += ' M ' + START_OFFSET_X + ' ' + (START_OFFSET_Y + SQ_WIDTH * i);
+    path_d += ' h ' + (gameBoard.length * SQ_WIDTH);
+  }
+
+  path.setAttribute('class', 'border');
+  path.setAttribute('d', path_d); 
+  svg.appendChild(path);
 }
 
 //recreates the arrays until the square at id has a 0
@@ -124,7 +150,6 @@ function rerollUntilGoodStart(id, gameBoard, num_mines) {
   let newGameBoard = gameBoard;
   while(newGameBoard[id_split[0]][id_split[1]] != '0') {
     newGameBoard = createArray([gameBoard.length, gameBoard[0].length], num_mines);
-    console.log("reroll");
   }
   //copy newGameBoard into gameBoard if newGameBoard was made
   for(let i = 0; i < gameBoard.length; i++) {
@@ -163,7 +188,7 @@ function reveal(id, gameBoard) {
 
 //changes the square color and the text to the newText string
 function reveal_edit(square, text, newText){
-  square.setAttribute('fill', 'grey');
+  square.setAttribute('class', 'blankSquare');
   text_edit(text, newText);
 }
 //changes the text color
