@@ -308,16 +308,16 @@ function addSmileyFace(svg, board_size, num_mines) {
   //use text as the eyes
   let eye1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   let eye2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  let eyeDistance = TOP_HEIGHT / 2 - TEXT_IN * 2;
+  let eyeDistance = TOP_HEIGHT / 2 - 5;
   eye1.setAttribute('x', parseInt(rect.getAttribute('x')) + eyeDistance);
-  eye1.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance);
+  eye1.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance + 1);
   eye1.setAttribute('id', 'smileyEye1');
-  eye1.setAttribute('class', 'text');
+  eye1.setAttribute('class', 'eye');
   eye1.innerHTML = '\u2022';
   eye2.setAttribute('x', parseInt(rect.getAttribute('x')) - eyeDistance + TOP_HEIGHT);
-  eye2.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance);
+  eye2.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance + 1);
   eye2.setAttribute('id', 'smileyEye2');
-  eye2.setAttribute('class', 'text');
+  eye2.setAttribute('class', 'eye');
   eye2.innerHTML = '\u2022';
   svg.appendChild(eye1);
   svg.appendChild(eye2);
@@ -325,6 +325,12 @@ function addSmileyFace(svg, board_size, num_mines) {
 }
 
 function smileyNeutral() {
+  let eye1 = document.getElementById('smileyEye1');
+  let eye2 = document.getElementById('smileyEye2');
+  eye1.innerHTML = '\u2022';
+  eye2.innerHTML = '\u2022';
+  eye1.setAttribute('font-size', 16);
+  eye2.setAttribute('font-size', 16);
   let rect = document.getElementById('smileySquare');
   let svg = document.getElementById('svg');
   let mouth = document.getElementById('smileyMouth');
@@ -370,6 +376,16 @@ function smileyHappy() {
   mouth.setAttribute('d', path_d);
   mouth.setAttribute('class', 'mouth');
   svg.appendChild(mouth);
+}
+
+function smileyDie() {
+  let eye1 = document.getElementById('smileyEye1');
+  let eye2 = document.getElementById('smileyEye2');
+  eye1.setAttribute('font-size', 12);
+  eye2.setAttribute('font-size', 12);
+  eye1.innerHTML = 'x';
+  eye2.innerHTML = 'x';
+  smileyMouthOpen();
 }
 
 //recreates the arrays until the square at id has a 0
@@ -453,6 +469,7 @@ function mark(id, disable) {
 
 //clears the field
 function loss(gameBoard) {
+  smileyDie();
   stopTimer();
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
