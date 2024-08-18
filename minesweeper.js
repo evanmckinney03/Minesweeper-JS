@@ -128,7 +128,7 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
   //adjust svg size
   svg.setAttribute('width', START_OFFSET_X * 2 + SQ_WIDTH * gameBoard.length);
   svg.setAttribute('height', START_OFFSET_Y + START_OFFSET_X + SQ_WIDTH * gameBoard[0].length);
-  addTimer(svg);
+  addTimer(svg, gameBoard.length);
 }
 //draw borders based on the size of the gameBoard
 function drawBorders(gameBoard, svg) {
@@ -151,19 +151,19 @@ function drawBorders(gameBoard, svg) {
 }
 
 //adds the timer in the top left
-function addTimer(svg) {
+function addTimer(svg, width) {
   //amount text is inside the box
   let textIn = 2;
   let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   rect.setAttribute('width', SQ_WIDTH * 2);
   rect.setAttribute('height', TOP_HEIGHT);
-  rect.setAttribute('x', START_OFFSET_X);
+  rect.setAttribute('x', START_OFFSET_X + width * SQ_WIDTH - parseInt(rect.getAttribute('width')));
   rect.setAttribute('y', START_OFFSET_X);
   rect.setAttribute('id', 'timerRect');
   rect.setAttribute('class', 'timerRect');
   let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.setAttribute('x', START_OFFSET_X + textIn);
-  text.setAttribute('y', START_OFFSET_X + TOP_HEIGHT - textIn * 4);
+  text.setAttribute('x', parseInt(rect.getAttribute('x')) + textIn);
+  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - textIn * 4);
   text.setAttribute('class', 'timerText');
   text.setAttribute('id', 'timerText');
   text.setAttribute('textLength', rect.getAttribute('width') - textIn * 2);
@@ -191,6 +191,16 @@ function incrementTimer() {
   time = '00' + time;
   time = time.substring(time.length - 3);
   text.innerHTML = time;
+}
+
+function addMineCounter(num_mines) {
+  let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('width', SQ_WIDTH * 2);
+  rect.setAttribute('height', TOP_HEIGHT);
+  rect.setAttribute('x', START_OFFSET_X);
+  rect.setAttribute('y', START_OFFSET_X);
+  rect.setAttribute('id', 'mineRect');
+  rect.setAttribute('class', 'mineRect');
 }
 
 //recreates the arrays until the square at id has a 0
