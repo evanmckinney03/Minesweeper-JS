@@ -366,6 +366,7 @@ function smileyHappy() {
   let mouth = document.getElementById('smileyMouth');
   if(mouth != null) mouth.parentNode.removeChild(mouth);
   mouth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  mouth.setAttribute('id', 'smileyMouth');
   let path_d = 'M ' + (parseInt(rect.getAttribute('x')) + MOUTH_X_DISTANCE) + ' ' 
 		+ (parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE);
 
@@ -489,7 +490,7 @@ function win(gameBoard) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.getElementById(i + ',' + j + ',square');
       let text = document.getElementById(i + ',' + j + ',text');
-      if(text.innerHTML.length == 0 || text.innerHTML == '!') {
+      if(text.innerHTML.length == 0 || text.innerHTML == '!' || text.innerHTML == '?') {
         text_edit(text, '!');
       }
     }
