@@ -4,18 +4,20 @@ const START_OFFSET_X = 10;
 //height of the top bar
 const TOP_HEIGHT = 40;
 const START_OFFSET_Y = START_OFFSET_X * 2 + TOP_HEIGHT;
+//amount the top text is inset/border size
+const TEXT_IN = 2;
 
 let timer;
 
 window.onload = init;
 
 function init() {
-  let svg = document.getElementById('svg');
   let easyButton = document.getElementById('easy');
   let intermediateButton = document.getElementById('intermediate');
   let expertButton = document.getElementById('expert');
 
   gameInit([9, 9], 10);
+
 
   easyButton.addEventListener('click', () => {
     gameInit([9, 9], 10);
@@ -32,7 +34,35 @@ function init() {
 function gameInit(board_size, num_mines) {
   let gameBoard = createArray(board_size, num_mines);
   let numCleared = 0;
-  addSquaresAndTextToSVG(gameBoard, numCleared, num_mines);
+  if(timer != null) stopTimer();
+  svg = document.getElementById('svg');
+  //remove everything from the svg, including the smiley face because it has to move
+  svg.replaceChildren();
+  populateSVG(gameBoard, numCleared, num_mines);
+  addSmileyFace(svg, board_size, num_mines);
+}
+//does the exact same as gameInit, but does not draw the smiley face
+//used when the smiley is clicked because otherwise creates loop where smiley
+//must add itself to the board
+function smileyGameInit(board_size, num_mines) {
+  let gameBoard = createArray(board_size, num_mines);
+  let numCleared = 0;
+  if(timer != null) stopTimer();
+  //remove everything but the smiley face because it does not have to move
+  let svg = document.getElementById('svg');
+  let children = svg.children;
+  //all parts of the smiley have 'smiley' in the id
+  let smileyParts = []
+  for(let i = 0; i < children.length; i++) {
+    if(children[i].getAttribute('id').includes('smiley')) {
+      smileyParts.push(children[i]);
+    }
+  }
+  svg.replaceChildren();
+  for(let i = 0; i < smileyParts.length; i++) {
+    svg.appendChild(smileyParts[i]);
+  }
+  populateSVG(gameBoard, numCleared, num_mines);
 }
 
 //initializes gameBoard based on board_size and num_mines
@@ -88,9 +118,9 @@ function calculateAdjacencies(gameBoard) {
   }
 }
 
-//creates grid of squares based on board_size
-function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
-  svg.replaceChildren();
+//creates grid of squares based on board_size, adds the text and the stuff at the top
+//except for the smiley face
+function populateSVG(gameBoard, numCleared, num_mines) {
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -130,7 +160,6 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
   svg.setAttribute('height', START_OFFSET_Y + START_OFFSET_X + SQ_WIDTH * gameBoard[0].length);
   addTimer(svg, gameBoard.length);
   addMineCounter(svg, num_mines);
-  addSmileyFace();
 }
 //draw borders based on the size of the gameBoard
 function drawBorders(gameBoard, svg) {
@@ -148,6 +177,7 @@ function drawBorders(gameBoard, svg) {
   }
 
   path.setAttribute('class', 'border');
+  path.setAttribute('id', 'border');
   path.setAttribute('d', path_d); 
   svg.appendChild(path);
 }
@@ -155,20 +185,19 @@ function drawBorders(gameBoard, svg) {
 //adds the timer in the top left
 function addTimer(svg, width) {
   //amount text is inside the box
-  let textIn = 2;
   let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   rect.setAttribute('width', SQ_WIDTH * 2);
   rect.setAttribute('height', TOP_HEIGHT);
   rect.setAttribute('x', START_OFFSET_X + width * SQ_WIDTH - parseInt(rect.getAttribute('width')));
   rect.setAttribute('y', START_OFFSET_X);
   rect.setAttribute('id', 'timerRect');
-  rect.setAttribute('class', 'timerRect');
+  rect.setAttribute('class', 'topRect');
   let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.setAttribute('x', parseInt(rect.getAttribute('x')) + textIn);
-  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - textIn * 4);
-  text.setAttribute('class', 'timerText');
+  text.setAttribute('x', parseInt(rect.getAttribute('x')) + TEXT_IN);
+  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - TEXT_IN * 4);
+  text.setAttribute('class', 'topText');
   text.setAttribute('id', 'timerText');
-  text.setAttribute('textLength', rect.getAttribute('width') - textIn * 2);
+  text.setAttribute('textLength', rect.getAttribute('width') - TEXT_IN * 2);
   text.setAttribute('font-size', TOP_HEIGHT);
   text.innerHTML = '000';
   svg.appendChild(rect);
@@ -196,21 +225,19 @@ function incrementTimer() {
 }
 
 function addMineCounter(svg, num_mines) {
-  let textIn = 2;
   let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   rect.setAttribute('width', SQ_WIDTH * 2);
   rect.setAttribute('height', TOP_HEIGHT);
   rect.setAttribute('x', START_OFFSET_X);
   rect.setAttribute('y', START_OFFSET_X);
   rect.setAttribute('id', 'mineRect');
-  //want the same color as the timer
-  rect.setAttribute('class', 'timerRect');
+  rect.setAttribute('class', 'topRect');
   let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.setAttribute('x', parseInt(rect.getAttribute('x')) + textIn);
-  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - textIn * 4);
-  text.setAttribute('class', 'timerText');
+  text.setAttribute('x', parseInt(rect.getAttribute('x')) + TEXT_IN);
+  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - TEXT_IN * 4);
+  text.setAttribute('class', 'topText');
   text.setAttribute('id', 'mineText');
-  text.setAttribute('textLength', rect.getAttribute('width') - textIn * 2);
+  text.setAttribute('textLength', rect.getAttribute('width') - TEXT_IN * 2);
   text.setAttribute('font-size', TOP_HEIGHT);
   let mineText = '00' + num_mines;
   mineText = mineText.substring(mineText.length - 3);
@@ -232,7 +259,58 @@ function editMineCounter(value) {
 }
 
 //adds the smiley face into the middle of the top part
+function addSmileyFace(svg, board_size, num_mines) {
+  //put it into the middle, assumes svg is the right size
+  let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('height', TOP_HEIGHT);
+  rect.setAttribute('width', TOP_HEIGHT);
+  rect.setAttribute('x', svg.getAttribute('width') / 2 - TOP_HEIGHT / 2);
+  rect.setAttribute('y', START_OFFSET_X);
+  rect.setAttribute('id', 'smileySquare');
+  rect.setAttribute('class', 'topRect');
+  svg.appendChild(rect);
+  //create circle
+  let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('cx', parseInt(rect.getAttribute('x')) + parseInt(rect.getAttribute('width')) / 2);  
+  circle.setAttribute('cy', parseInt(rect.getAttribute('y')) + parseInt(rect.getAttribute('height')) / 2);  
+  circle.setAttribute('r', (parseInt(rect.getAttribute('width')) - TEXT_IN * 4) / 2);
+  circle.setAttribute('class', 'smileyCircle');
+  circle.setAttribute('id', 'smileyCircle');
+  circle.addEventListener('click', () => smileyGameInit(board_size, num_mines));
+  svg.append(circle);
+  //use text as the eyes
+  let eye1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  let eye2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  let eyeDistance = TOP_HEIGHT / 2 - TEXT_IN * 2;
+  eye1.setAttribute('x', parseInt(rect.getAttribute('x')) + eyeDistance);
+  eye1.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance);
+  eye1.setAttribute('id', 'smileyEye1');
+  eye1.setAttribute('class', 'text');
+  eye1.innerHTML = '\u2022';
+  eye2.setAttribute('x', parseInt(rect.getAttribute('x')) - eyeDistance + TOP_HEIGHT);
+  eye2.setAttribute('y', parseInt(rect.getAttribute('y')) + eyeDistance);
+  eye2.setAttribute('id', 'smileyEye2');
+  eye2.setAttribute('class', 'text');
+  eye2.innerHTML = '\u2022';
+  svg.appendChild(eye1);
+  svg.appendChild(eye2);
+  smileyNeutral(svg);
+}
 
+function smileyNeutral() {
+  let rect = document.getElementById('smileySquare');
+  let svg = document.getElementById('svg');
+  let mouthXDistance = TOP_HEIGHT / 4;
+  let mouthYDistance = TOP_HEIGHT / 2 + 5;
+  let mouth = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  mouth.setAttribute('id', 'smileyMouth');
+  mouth.setAttribute('x1', parseInt(rect.getAttribute('x')) + mouthXDistance);
+  mouth.setAttribute('y1', parseInt(rect.getAttribute('y')) + mouthYDistance);
+  mouth.setAttribute('x2', parseInt(rect.getAttribute('x')) + TOP_HEIGHT - mouthXDistance);
+  mouth.setAttribute('y2', parseInt(mouth.getAttribute('y1')));
+  mouth.setAttribute('class', 'mouth');
+  svg.appendChild(mouth);
+}
 
 //recreates the arrays until the square at id has a 0
 function rerollUntilGoodStart(id, gameBoard, num_mines) {

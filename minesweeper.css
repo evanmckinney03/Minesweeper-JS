@@ -65,11 +65,23 @@
   pointer-events: none;
 }
 
-.timerRect {
+.topRect {
   fill: darkgrey;
 }
 
-.timerText {
+.topText {
   fill: red;
   dominant-baseline: auto;
+}
+
+.smileyCircle {
+  fill: yellow;
+  stroke: black;
+  stroke-width: 1;
+}
+
+.mouth {
+  stroke: black;
+  stroke-width: 1;
+  pointer-events: none;
 }
