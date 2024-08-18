@@ -129,6 +129,8 @@ function addSquaresAndTextToSVG(gameBoard, numCleared, num_mines) {
   svg.setAttribute('width', START_OFFSET_X * 2 + SQ_WIDTH * gameBoard.length);
   svg.setAttribute('height', START_OFFSET_Y + START_OFFSET_X + SQ_WIDTH * gameBoard[0].length);
   addTimer(svg, gameBoard.length);
+  addMineCounter(svg, num_mines);
+  addSmileyFace();
 }
 //draw borders based on the size of the gameBoard
 function drawBorders(gameBoard, svg) {
@@ -193,15 +195,44 @@ function incrementTimer() {
   text.innerHTML = time;
 }
 
-function addMineCounter(num_mines) {
+function addMineCounter(svg, num_mines) {
+  let textIn = 2;
   let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   rect.setAttribute('width', SQ_WIDTH * 2);
   rect.setAttribute('height', TOP_HEIGHT);
   rect.setAttribute('x', START_OFFSET_X);
   rect.setAttribute('y', START_OFFSET_X);
   rect.setAttribute('id', 'mineRect');
-  rect.setAttribute('class', 'mineRect');
+  //want the same color as the timer
+  rect.setAttribute('class', 'timerRect');
+  let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', parseInt(rect.getAttribute('x')) + textIn);
+  text.setAttribute('y', parseInt(rect.getAttribute('y')) + TOP_HEIGHT - textIn * 4);
+  text.setAttribute('class', 'timerText');
+  text.setAttribute('id', 'mineText');
+  text.setAttribute('textLength', rect.getAttribute('width') - textIn * 2);
+  text.setAttribute('font-size', TOP_HEIGHT);
+  let mineText = '00' + num_mines;
+  mineText = mineText.substring(mineText.length - 3);
+  text.innerHTML = mineText;
+  svg.appendChild(rect);
+  svg.appendChild(text);
 }
+
+//adds the passed in value to the mine counter
+function editMineCounter(value) {
+  let mineCounter = document.getElementById('mineText');
+  let text = mineCounter.innerHTML;
+  text = parseInt(text) + value;
+  if(text >= 0) {
+    text = '00' + text;
+    text = text.substring(text.length - 3);
+  } 
+  mineCounter.innerHTML = text;
+}
+
+//adds the smiley face into the middle of the top part
+
 
 //recreates the arrays until the square at id has a 0
 function rerollUntilGoodStart(id, gameBoard, num_mines) {
@@ -273,8 +304,10 @@ function mark(id, disable) {
   let text = document.getElementById(id_split[0] + ',' + id_split[1] + ',text');
   if(text.innerHTML.length == 0) {
     text_edit(text, '!');
+    editMineCounter(-1);
   } else if(text.innerHTML == '!') {
     text_edit(text, '?');
+    editMineCounter(1);
   } else if(text.innerHTML == '?') {
     text_edit(text, '');
   }
@@ -295,6 +328,7 @@ function loss(gameBoard) {
 //marks all the mines with exclamation points
 function win(gameBoard) { 
   stopTimer();
+  document.getElementById('mineText').innerHTML = '000';
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
       let square = document.getElementById(i + ',' + j + ',square');
