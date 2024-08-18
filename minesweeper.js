@@ -354,6 +354,24 @@ function smileyMouthOpen() {
   svg.appendChild(mouth);
 }
 
+function smileyHappy() { 
+  let rect = document.getElementById('smileySquare');
+  let svg = document.getElementById('svg');
+  let mouth = document.getElementById('smileyMouth');
+  if(mouth != null) mouth.parentNode.removeChild(mouth);
+  mouth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  let path_d = 'M ' + (parseInt(rect.getAttribute('x')) + MOUTH_X_DISTANCE) + ' ' 
+		+ (parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE);
+
+  path_d += ' Q ' + (parseInt(rect.getAttribute('x')) + TOP_HEIGHT / 2) + ' ' 
+		+ (parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE + 7);
+  path_d += ' ' + (parseInt(rect.getAttribute('x')) + TOP_HEIGHT - MOUTH_X_DISTANCE) + ' ' 
+		+ (parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE);
+  mouth.setAttribute('d', path_d);
+  mouth.setAttribute('class', 'mouth');
+  svg.appendChild(mouth);
+}
+
 //recreates the arrays until the square at id has a 0
 function rerollUntilGoodStart(id, gameBoard, num_mines) {
   let id_split = id.split(',');
@@ -448,6 +466,7 @@ function loss(gameBoard) {
 //marks all the mines with exclamation points
 function win(gameBoard) { 
   stopTimer();
+  smileyHappy();
   document.getElementById('mineText').innerHTML = '000';
   for(let i = 0; i < gameBoard.length; i++) {
     for(let j = 0; j < gameBoard[0].length; j++) {
