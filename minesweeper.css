@@ -81,7 +81,9 @@
 }
 
 .mouth {
+  fill: none;
   stroke: black;
-  stroke-width: 1;
+  stroke-width: 1.5;
   pointer-events: none;
 }
+

@@ -6,6 +6,12 @@ const TOP_HEIGHT = 40;
 const START_OFFSET_Y = START_OFFSET_X * 2 + TOP_HEIGHT;
 //amount the top text is inset/border size
 const TEXT_IN = 2;
+//used for positioning the mouth of the smiley
+const MOUTH_X_DISTANCE = TOP_HEIGHT / 4 + 1;
+const MOUTH_Y_DISTANCE = TOP_HEIGHT / 2 + 6;
+
+//used for mousedown event to calculate if clicking within the grid
+const MARGIN = 8;
 
 let timer;
 
@@ -15,19 +21,40 @@ function init() {
   let easyButton = document.getElementById('easy');
   let intermediateButton = document.getElementById('intermediate');
   let expertButton = document.getElementById('expert');
+  let board_size = [9, 9];
+  let num_mines = 10;
 
-  gameInit([9, 9], 10);
-
+  gameInit(board_size, num_mines);
 
   easyButton.addEventListener('click', () => {
-    gameInit([9, 9], 10);
+    board_size = [9, 9];
+    num_mines = 10;
+    gameInit(board_size, num_mines);
   });
   intermediateButton.addEventListener('click', () => {
-    gameInit([16, 16], 40);
+    board_size = [16, 16];
+    num_mines = 40;
+    gameInit(board_size, num_mines);
   });
   expertButton.addEventListener('click', () => {
-    gameInit([30, 16], 99);
+    board_size = [30, 16];
+    num_mines = 99;
+    gameInit(board_size, num_mines);
   });
+
+  onmousedown = (event) => {
+    let grid_border = [[START_OFFSET_X, START_OFFSET_Y], 
+	    [START_OFFSET_X + board_size[0] * SQ_WIDTH, START_OFFSET_Y + board_size[1] * SQ_WIDTH]];
+    let click = [event.pageX - MARGIN, event.pageY - MARGIN];
+    //checks to see if click was within grid
+    if(click[0] >= grid_border[0][0] && click[0] < grid_border[1][0] 
+	    && click[1] >= grid_border[0][1] && click[1] < grid_border[1][1]) {
+      smileyMouthOpen();
+    }
+  }
+  onmouseup = (event) => {
+    smileyNeutral();
+  }
 }
 
 //does everything needed to start a game based on board_size and num_mines
@@ -294,20 +321,35 @@ function addSmileyFace(svg, board_size, num_mines) {
   eye2.innerHTML = '\u2022';
   svg.appendChild(eye1);
   svg.appendChild(eye2);
-  smileyNeutral(svg);
+  smileyNeutral();
 }
 
 function smileyNeutral() {
   let rect = document.getElementById('smileySquare');
   let svg = document.getElementById('svg');
-  let mouthXDistance = TOP_HEIGHT / 4;
-  let mouthYDistance = TOP_HEIGHT / 2 + 5;
-  let mouth = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  let mouth = document.getElementById('smileyMouth');
+  if(mouth != null) mouth.parentNode.removeChild(mouth);
+  mouth = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   mouth.setAttribute('id', 'smileyMouth');
-  mouth.setAttribute('x1', parseInt(rect.getAttribute('x')) + mouthXDistance);
-  mouth.setAttribute('y1', parseInt(rect.getAttribute('y')) + mouthYDistance);
-  mouth.setAttribute('x2', parseInt(rect.getAttribute('x')) + TOP_HEIGHT - mouthXDistance);
+  mouth.setAttribute('x1', parseInt(rect.getAttribute('x')) + MOUTH_X_DISTANCE);
+  mouth.setAttribute('y1', parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE);
+  mouth.setAttribute('x2', parseInt(rect.getAttribute('x')) + TOP_HEIGHT - MOUTH_X_DISTANCE);
   mouth.setAttribute('y2', parseInt(mouth.getAttribute('y1')));
+  mouth.setAttribute('class', 'mouth');
+  svg.appendChild(mouth);
+}
+
+function smileyMouthOpen() {
+  let rect = document.getElementById('smileySquare');
+  let svg = document.getElementById('svg');
+  let mouth = document.getElementById('smileyMouth');
+  if(mouth != null) mouth.parentNode.removeChild(mouth);
+  mouth = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+  mouth.setAttribute('id', 'smileyMouth');
+  mouth.setAttribute('cx', parseInt(rect.getAttribute('x')) + TOP_HEIGHT / 2);
+  mouth.setAttribute('cy', parseInt(rect.getAttribute('y')) + MOUTH_Y_DISTANCE);
+  mouth.setAttribute('rx', 6);
+  mouth.setAttribute('ry', 3);
   mouth.setAttribute('class', 'mouth');
   svg.appendChild(mouth);
 }
